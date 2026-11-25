@@ -1,0 +1,10 @@
+RX.incDetail=(i,done)=>{const d=RX.data,t=d.teams.find(x=>x.id===i.team),dl=RX.$('#dlg'),open=i.status!=='Resolved';
+dl.innerHTML=`<div class="box"><h3>#${i.id} ${RX.h(i.title)}</h3><p>${RX.badge(i.sev)} ${RX.badge(i.status)} · ${i.type}</p><p>Victims: ${i.victims} · Location (${Math.round(i.x)}, ${Math.round(i.y)}) · Team: ${t?RX.h(t.name):'—'}</p>${RX.pb(i.progress,100)}<h4>History</h4><ul class="tl">${(i.history||[]).slice().reverse().map(h=>`<li><small>T+${h.t}</small>${RX.h(h.m)}</li>`).join('')||'<li>No history</li>'}</ul><div class="row">${open&&!i.team?'<button class="btn" id="as">Assign team</button>':''}${open?'<button class="btn" id="rs">Mark resolved</button>':''}<button class="btn red" id="cl">Close</button></div></div>`;dl.showModal();
+RX.$('#cl',dl).onclick=()=>dl.close();
+if(RX.$('#rs',dl))RX.$('#rs',dl).onclick=()=>{i.status='Resolved';i.progress=100;i.resolvedAt=d.tick;RX.ih(i,'Marked resolved manually');RX.log('Incident #'+i.id+' marked resolved');dl.close();RX.toast('Incident resolved');done()};
+if(RX.$('#as',dl))RX.$('#as',dl).onclick=()=>{dl.close();RX.assignIncident(i,done)}};
+RX.assignIncident=(i,done)=>{const d=RX.data,t=d.teams.filter(x=>x.status==='Available');if(!t.length)return RX.toast('No available teams',1);RX.form('Assign team',[{k:'t',l:'Team',t:'select',n:1,o:t.map(x=>[x.id,`${x.name} (${x.type})`])}],{},v=>{RX.assign(i.id,v.t);RX.toast('Team assigned');done()})};
+RX.reg('incidents','Incidents','⚠',el=>{const d=RX.data;RX.crud(el,'incidents','Incident',RX.incFields,
+[['#',i=>i.id],['Title',i=>RX.h(i.title)],['Type',i=>i.type],['Severity',i=>RX.badge(i.sev)],['Status',i=>RX.badge(i.status)],['Victims',i=>i.victims],['Team',i=>RX.h((d.teams.find(t=>t.id===i.team)||{}).name||'—')],['Progress',i=>RX.pb(i.progress,100)],['Created',i=>'T+'+i.created]],
+{defaults:()=>({progress:0,team:0,created:d.tick,history:[{t:d.tick,m:'Reported'}]}),extra:i=>'<button class="btn sm" data-a="dt">Details</button>'+(i.status==='Reported'&&!i.team?'<button class="btn sm" data-a="as">Assign team</button>':''),
+act:(a,i,done)=>a==='dt'?RX.incDetail(i,done):RX.assignIncident(i,done)})});

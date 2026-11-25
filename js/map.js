@@ -1,0 +1,26 @@
+RX.map={s:1,ox:0,oy:0,sel:null};
+RX.roads=[[[0,300],[1000,300]],[[500,0],[500,600]],[[0,520],[400,450],[1000,500]],[[150,0],[260,380],[150,600]],[[500,90],[700,200],[820,430]]];
+RX.reg('map','Emergency Map','⌖',el=>{
+el.innerHTML=`<div class="bar"><h2>Emergency Map <small>(simulated area)</small></h2><div><button class="btn" data-z="1.25">＋</button> <button class="btn" data-z="0.8">－</button> <button class="btn" data-z="0">Reset</button></div></div><div class="card mapw"><canvas id="cv"></canvas></div><div class="card" id="mi">Tap an object. Drag to pan; wheel or buttons to zoom. Legend: ● incident, ■ hospital, ▲ shelter, ◆ team, dashed circle = evacuation zone.</div>`;
+const cv=RX.$('#cv'),m=RX.map;cv.width=cv.parentElement.clientWidth;cv.height=Math.min(560,innerHeight*.6);cv.style.touchAction='none';
+const zoom=(f,px=cv.width/2,py=cv.height/2)=>{const n=Math.max(.6,Math.min(5,m.s*f));f=n/m.s;m.ox=px-(px-m.ox)*f;m.oy=py-(py-m.oy)*f;m.s=n;RX.mapDraw()};
+el.querySelectorAll('[data-z]').forEach(b=>b.onclick=()=>{const z=+b.dataset.z;z?zoom(z):(m.s=1,m.ox=m.oy=0,RX.mapDraw())});
+cv.onwheel=e=>{e.preventDefault();const r=cv.getBoundingClientRect();zoom(e.deltaY<0?1.15:.87,e.clientX-r.left,e.clientY-r.top)};
+const ps=new Map(),pinch=()=>{const a=[...ps.values()];return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)};let dr=null,pd=0;
+cv.onpointerdown=e=>{ps.set(e.pointerId,{x:e.clientX,y:e.clientY});cv.setPointerCapture(e.pointerId);if(ps.size===2){pd=pinch();dr=null}else dr={x:e.clientX,y:e.clientY,ox:m.ox,oy:m.oy,mv:false}};
+cv.onpointermove=e=>{if(!ps.has(e.pointerId))return;ps.set(e.pointerId,{x:e.clientX,y:e.clientY});if(ps.size===2){const n=pinch(),a=[...ps.values()],r=cv.getBoundingClientRect();if(pd)zoom(n/pd,(a[0].x+a[1].x)/2-r.left,(a[0].y+a[1].y)/2-r.top);pd=n;return}if(!dr)return;const dx=e.clientX-dr.x,dy=e.clientY-dr.y;if(Math.abs(dx)+Math.abs(dy)>5)dr.mv=true;if(dr.mv){m.ox=dr.ox+dx;m.oy=dr.oy+dy;RX.mapDraw()}};
+cv.onpointerup=cv.onpointercancel=e=>{ps.delete(e.pointerId);pd=0;if(dr&&!dr.mv&&e.type==='pointerup'){const r=cv.getBoundingClientRect(),k=cv.width/1000*m.s;RX.mapPick({x:(e.clientX-r.left-m.ox)/k,y:(e.clientY-r.top-m.oy)/k})}dr=null};
+RX.mapDraw()});
+RX.mapPick=p=>{const d=RX.data;let best=null,bd=1e9;[['Incident',d.incidents.filter(i=>i.status!=='Resolved'),'title'],['Hospital',d.hospitals,'name'],['Shelter',d.shelters,'name'],['Team',d.teams,'name']].forEach(([t,a,n])=>a.forEach(o=>{const q=RX.dist(o,p);if(q<bd){bd=q;best={t,o,n:o[n]}}}));
+const near=best&&bd<22/RX.map.s,x=Math.round(p.x),y=Math.round(p.y);RX.map.sel={x,y};
+RX.$('#mi').innerHTML=(near?`<b>${best.t}: ${RX.h(best.n)}</b><br>`+(best.t==='Incident'?`${best.o.sev} · ${best.o.status} · progress ${Math.round(best.o.progress)}%`:best.t==='Hospital'?`Beds free ${best.o.beds-best.o.occupied}/${best.o.beds}`:best.t==='Shelter'?`Occupancy ${best.o.occupied}/${best.o.capacity}`:`${best.o.type} · ${best.o.status}`)+'<br>':'')+`Location (${x}, ${y}) <button class="btn sm" id="ri">Report incident here</button>`;
+RX.$('#ri').onclick=()=>RX.incForm({x,y})};
+RX.mapDraw=()=>{const cv=RX.$('#cv');if(!cv)return;const c=cv.getContext('2d'),m=RX.map,d=RX.data,k=cv.width/1000*m.s,X=x=>x*k+m.ox,Y=y=>y*k+m.oy,L=(t,x,y,col)=>{c.fillStyle=col||'#cfe0ff';c.font='11px sans-serif';c.textAlign='center';c.fillText(t,X(x),Y(y))};
+c.fillStyle='#0c1a2e';c.fillRect(0,0,cv.width,cv.height);c.strokeStyle='rgba(255,255,255,.05)';c.lineWidth=1;for(let i=0;i<=1000;i+=50){c.beginPath();c.moveTo(X(i),Y(0));c.lineTo(X(i),Y(600));c.moveTo(X(0),Y(i));c.lineTo(X(1000),Y(i));c.stroke()}
+c.strokeStyle='#1f5f99';c.lineWidth=22*k;c.beginPath();c.moveTo(X(0),Y(420));c.bezierCurveTo(X(250),Y(300),X(300),Y(500),X(450),Y(600));c.stroke();
+c.strokeStyle='#4a5b75';c.lineWidth=5*k;RX.roads.forEach(r=>{c.beginPath();r.forEach((p,i)=>i?c.lineTo(X(p[0]),Y(p[1])):c.moveTo(X(p[0]),Y(p[1])));c.stroke()});
+d.zones.forEach(z=>{c.setLineDash([6,5]);c.strokeStyle='#ff8a1f';c.fillStyle='rgba(255,138,31,.12)';c.lineWidth=2;c.beginPath();c.arc(X(z.x),Y(z.y),z.r*k,0,7);c.fill();c.stroke();const s=d.shelters.find(q=>q.id===z.shelter);if(s){c.strokeStyle='#2fb86b';c.beginPath();c.moveTo(X(z.x),Y(z.y));c.lineTo(X(s.x),Y(s.y));c.stroke();L((RX.dist(z,s)*.05).toFixed(1)+' km',(z.x+s.x)/2,(z.y+s.y)/2,'#7be3a8')}c.setLineDash([]);L(z.name,z.x,z.y-z.r-4,'#ffb86b')});
+d.hospitals.forEach(h=>{c.fillStyle='#fff';c.fillRect(X(h.x)-8,Y(h.y)-8,16,16);c.fillStyle='#e5392b';c.fillRect(X(h.x)-1.5,Y(h.y)-6,3,12);c.fillRect(X(h.x)-6,Y(h.y)-1.5,12,3);L(h.name,h.x,h.y+22)});
+d.shelters.forEach(s=>{c.fillStyle='#2fb86b';c.beginPath();c.moveTo(X(s.x),Y(s.y)-10);c.lineTo(X(s.x)+10,Y(s.y)+8);c.lineTo(X(s.x)-10,Y(s.y)+8);c.fill();L(s.name,s.x,s.y+22)});
+d.teams.forEach(t=>{c.fillStyle=t.status==='Deployed'?'#4da3ff':'#8fa3bf';c.beginPath();c.moveTo(X(t.x),Y(t.y)-8);c.lineTo(X(t.x)+8,Y(t.y));c.lineTo(X(t.x),Y(t.y)+8);c.lineTo(X(t.x)-8,Y(t.y));c.fill();L(t.name,t.x,t.y-12,'#9cc8ff')});
+d.incidents.filter(i=>i.status!=='Resolved').forEach(i=>{const r=(6+RX.SEV[i.sev]*3)*Math.max(.8,m.s*.8);c.fillStyle=i.status==='Responding'?'rgba(255,138,31,.85)':'rgba(229,57,43,.9)';c.beginPath();c.arc(X(i.x),Y(i.y),r,0,7);c.fill();c.strokeStyle='#fff';c.lineWidth=2;c.stroke();L(i.type,i.x,i.y-r/m.s-4,'#fff')})};

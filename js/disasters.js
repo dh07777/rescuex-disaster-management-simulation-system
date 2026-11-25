@@ -1,0 +1,11 @@
+RX.TYPES=['Flood','Earthquake','Fire','Cyclone','Accident'];
+RX.SEV={Low:1,Medium:2,High:3,Critical:4};
+RX.ih=(i,m)=>{(i.history=i.history||[]).push({t:RX.data.tick,m})};
+RX.newInc=o=>{const d=RX.data;const i={id:RX.id(d.incidents),status:'Reported',progress:0,team:0,created:d.tick,...o};i.history=[{t:d.tick,m:"Reported ("+i.sev+")"}];d.incidents.push(i);RX.log(`New incident #${i.id}: ${i.title}`);return i};
+RX.spawn=(type,n=1)=>{const sv=['Medium','High','Critical'],t={Flood:'Flash flood',Earthquake:'Earthquake damage',Fire:'Fire outbreak',Cyclone:'Cyclone landfall',Accident:'Road accident'};
+for(let i=0;i<n;i++){const s=sv[Math.floor(Math.random()*3)];RX.newInc({type,title:`${t[type]} – Sector ${Math.floor(Math.random()*90)+10}`,sev:s,victims:5*RX.SEV[s]+Math.floor(Math.random()*15),x:Math.round(80+Math.random()*840),y:Math.round(60+Math.random()*480)})}};
+RX.incFields=[{k:'title',l:'Title'},{k:'type',l:'Type',t:'select',o:[...RX.TYPES,'Custom']},{k:'sev',l:'Severity',t:'select',o:['Low','Medium','High','Critical']},{k:'status',l:'Status',t:'select',o:['Reported','Responding','Resolved']},{k:'victims',l:'Estimated victims',t:'number',min:0,max:100000,def:10},{k:'x',l:'Map X (0-1000)',t:'number',min:0,max:1000,def:500},{k:'y',l:'Map Y (0-600)',t:'number',min:0,max:600,def:300}];
+RX.incForm=v=>RX.form('Report incident',RX.incFields,v,o=>{RX.newInc(o);RX.save();RX.toast('Incident reported');RX.render()});
+RX.reg('disasters','Disaster Simulation','⚡',el=>{const D={Flood:'Rising river levels flood low-lying areas.',Earthquake:'Structural collapses and trapped victims.',Fire:'Rapidly spreading fire outbreak.',Cyclone:'High winds and storm surge.',Accident:'Multi-vehicle road accident.'};
+el.innerHTML=`<div class="note">Triggers create simulated incidents at random map locations.</div><div class="cards">${RX.TYPES.map(t=>`<div class="card"><h3>${t}</h3><p>${D[t]}</p><button class="btn red" data-t="${t}">Trigger ${t}</button></div>`).join('')}<div class="card"><h3>Custom scenario</h3><p>Define your own incident.</p><button class="btn red" id="cu">Create custom</button></div></div>`;
+el.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='cu')return RX.incForm({type:'Custom'});RX.spawn(b.dataset.t,1+Math.floor(Math.random()*2));RX.save();RX.toast(b.dataset.t+' scenario triggered')}});

@@ -1,0 +1,216 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RescueX – Disaster Management Simulation</title><style>:root{--bg:#0a1628;--bg2:#0f2038;--card:rgba(255,255,255,.06);--bd:rgba(255,255,255,.12);--tx:#e6edf7;--mu:#8fa3bf;--red:#e5392b;--or:#ff8a1f;--ok:#2fb86b}
+[data-theme=light]{--bg:#eef2f8;--bg2:#fff;--card:#fff;--bd:#d5dde9;--tx:#14213a;--mu:#5b6b85}
+*{box-sizing:border-box}body{margin:0;font:14px system-ui,Segoe UI,sans-serif;background:radial-gradient(circle at 20% 0,var(--bg2),var(--bg));color:var(--tx);min-height:100vh;display:flex}
+aside{width:230px;background:var(--bg2);border-right:1px solid var(--bd);position:fixed;top:0;left:0;bottom:0;padding:14px;display:flex;flex-direction:column;z-index:20;transition:.25s;overflow:auto}
+.logo{display:flex;gap:8px;align-items:center;font-size:20px;margin-bottom:14px}.logo span{color:var(--red)}
+#menu a{display:block;padding:9px 12px;border-radius:8px;color:var(--mu);text-decoration:none;margin-bottom:2px}#menu a.on,#menu a:hover{background:linear-gradient(90deg,rgba(229,57,43,.3),transparent);color:var(--tx)}
+.simnote{margin-top:auto;font-size:11px;color:var(--or)}
+#main{margin-left:230px;flex:1;min-width:0}header{display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--bd);position:sticky;top:0;background:var(--bg2);z-index:10}
+header h1{font-size:18px;margin:0;flex:1}#burger{display:none}.ctl{display:flex;gap:8px;align-items:center}#clock{color:var(--or);font-weight:700}
+main{padding:20px}.btn{background:var(--card);border:1px solid var(--bd);color:var(--tx);padding:8px 14px;border-radius:8px;cursor:pointer;font:inherit}.btn:hover{border-color:var(--or)}.btn.red{background:var(--red);border-color:var(--red);color:#fff}.btn.sm{padding:3px 8px;font-size:12px;margin-left:4px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;backdrop-filter:blur(10px);margin-bottom:14px}.scroll{overflow-x:auto}
+.bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap}.bar h2{margin:0;font-size:18px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}.kpi{margin:0;border-left:4px solid var(--mu)}.kpi.red{border-color:var(--red)}.kpi.or{border-color:var(--or)}.kpi.ok{border-color:var(--ok)}.kpi small{color:var(--mu);display:block}.kpi b{font-size:26px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--bd);white-space:nowrap}th{color:var(--mu);font-size:12px;text-transform:uppercase}
+.badge{padding:2px 9px;border-radius:99px;font-size:12px;background:#5b6b85;color:#fff}.b-critical,.b-full,.b-closed{background:var(--red)}.b-high,.b-responding,.b-evacuating{background:var(--or)}.b-medium,.b-deployed,.b-planned,.b-reported{background:#c9a227}.b-low,.b-open,.b-available,.b-resolved,.b-complete{background:var(--ok)}
+.pb{background:rgba(127,127,127,.25);border-radius:6px;height:16px;position:relative;min-width:90px}.pb i{display:block;height:100%;border-radius:6px;background:var(--ok)}.pb i.mid{background:#c9a227}.pb i.hi{background:var(--red)}.pb em{position:absolute;top:0;left:0;right:0;bottom:0;text-align:center;font-size:11px;font-style:normal;line-height:16px;color:#fff}
+.srow{display:flex;gap:10px;align-items:center;margin-bottom:8px}.srow .badge{width:70px;text-align:center}.srow .pb{flex:1}
+.tl{list-style:none;padding:0;margin:0;max-height:260px;overflow:auto}.tl li{padding:6px 0 6px 14px;border-left:2px solid var(--red);margin-left:4px;font-size:13px}.tl small{color:var(--mu);margin-right:6px}
+.note{background:rgba(255,138,31,.12);border:1px solid var(--or);border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:14px}
+.mapw{padding:0;overflow:hidden}canvas{display:block;max-width:100%}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+dialog{background:var(--bg2);color:var(--tx);border:1px solid var(--bd);border-radius:14px;padding:0;width:min(440px,94vw);max-height:90vh}dialog::backdrop{background:rgba(0,0,0,.6)}
+.box{padding:18px;display:flex;flex-direction:column;gap:10px}.box label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mu)}
+input,select{background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:8px;font:inherit}.row{display:flex;gap:8px;justify-content:flex-end}.err{color:var(--red);margin:0;font-size:12px}
+#toasts{position:fixed;right:14px;bottom:14px;z-index:99;display:flex;flex-direction:column;gap:8px}.toast{background:var(--ok);color:#fff;padding:10px 16px;border-radius:8px}.toast.bad{background:var(--red)}
+.nw{white-space:nowrap}
+@media(max-width:900px){aside{transform:translateX(-100%)}aside.open{transform:none}#main{margin-left:0}#burger{display:block}main{padding:12px}}
+@media print{aside,header,.btn{display:none!important}#main{margin:0}body{background:#fff;color:#000}.card{border:1px solid #999;color:#000}}
+</style><script>addEventListener('error',function(e){var t=e.target&&(e.target.src||e.target.href);var m=t?'Could not load file: '+t+' (extract the whole zip and keep css/ and js/ beside index.html)':'Script error: '+e.message+' ('+(e.filename||'').split('/').pop()+':'+e.lineno+')';var d=document.getElementById('errbar')||document.body.appendChild(Object.assign(document.createElement('div'),{id:'errbar'}));d.style.cssText='position:fixed;z-index:999;bottom:10px;left:10px;right:10px;padding:12px;background:#600;color:#fff;font:14px sans-serif;border-radius:8px';d.textContent='RescueX problem: '+m},true)</script>
+</head><body>
+<div id="boot" style="position:fixed;z-index:99;top:10px;left:10px;right:10px;padding:12px;background:#3a1d00;color:#fff;border:1px solid #ff8a1f;border-radius:8px;font:14px sans-serif">Loading RescueX… If this message stays, extract the whole zip first (do not open index.html from inside the zip) and keep the css/ and js/ folders next to it.</div>
+<aside id="nav"><div class="logo"><svg width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#e5392b"/><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" fill="#fff"/></svg><b>Rescue<span>X</span></b></div><nav id="menu"></nav><p class="simnote">SIMULATION ONLY – not a real emergency response system</p></aside>
+<div id="main"><header><button class="btn" id="burger">☰</button><h1 id="title"></h1><div class="ctl"><span id="clock"></span><button class="btn red" id="play">▶ Start</button><button class="btn" id="restart">↺ Restart</button></div></header><main id="view"></main></div>
+<dialog id="dlg"></dialog><div id="toasts"></div>
+<script>window.RX={views:{},nav:[],data:null,KEY:'rescuex_v1'};
+RX.seed=()=>({tick:0,strategy:'manual',settings:{theme:'dark',speed:1,random:false},runs:[],log:[],
+incidents:[
+{id:1,type:'Flood',title:'Riverside district flooding',sev:'High',status:'Reported',x:260,y:380,victims:40,progress:0,team:0,created:0},
+{id:2,type:'Fire',title:'Warehouse fire, Industrial Zone',sev:'Critical',status:'Reported',x:700,y:200,victims:15,progress:0,team:0,created:0},
+{id:3,type:'Accident',title:'Highway pile-up',sev:'Medium',status:'Reported',x:520,y:90,victims:8,progress:0,team:0,created:0},
+{id:4,type:'Earthquake',title:'Aftershock building collapse',sev:'High',status:'Reported',x:820,y:430,victims:25,progress:0,team:0,created:0}],
+teams:[
+{id:1,name:'Alpha Medic',type:'Medical',members:8,vehicle:'Ambulance',equipment:'Trauma kits',status:'Available',x:500,y:300,incident:0,busy:0},
+{id:2,name:'Bravo Fire',type:'Fire',members:12,vehicle:'Fire engine',equipment:'Hoses, foam',status:'Available',x:650,y:260,incident:0,busy:0},
+{id:3,name:'Charlie SAR',type:'Search & Rescue',members:10,vehicle:'Rescue truck',equipment:'Cutters, K9',status:'Available',x:800,y:380,incident:0,busy:0},
+{id:4,name:'Delta Water',type:'Water Rescue',members:6,vehicle:'Boat',equipment:'Life jackets',status:'Available',x:300,y:420,incident:0,busy:0},
+{id:5,name:'Echo Medic',type:'Medical',members:6,vehicle:'Ambulance',equipment:'First aid',status:'Available',x:480,y:150,incident:0,busy:0}],
+hospitals:[
+{id:1,name:'City General',beds:120,occupied:70,icu:10,doctors:25,medKits:80,x:480,y:280},
+{id:2,name:'St. Mary Hospital',beds:80,occupied:40,icu:6,doctors:15,medKits:50,x:780,y:330},
+{id:3,name:'Riverside Clinic',beds:40,occupied:20,icu:2,doctors:8,medKits:30,x:200,y:300}],
+shelters:[
+{id:1,name:'Central School',capacity:300,occupied:20,food:500,water:800,medical:60,status:'Open',x:400,y:450},
+{id:2,name:'City Stadium',capacity:800,occupied:50,food:1500,water:2500,medical:120,status:'Open',x:640,y:490},
+{id:3,name:'Community Hall',capacity:200,occupied:10,food:300,water:500,medical:30,status:'Open',x:150,y:480}],
+resources:[
+{id:1,name:'Food packs',cat:'Food',qty:2000,unit:'packs',min:300,used:0},
+{id:2,name:'Drinking water',cat:'Water',qty:5000,unit:'L',min:800,used:0},
+{id:3,name:'Medicine kits',cat:'Medicine',qty:400,unit:'kits',min:60,used:0},
+{id:4,name:'Rescue boats',cat:'Vehicle',qty:6,unit:'units',min:2,used:0},
+{id:5,name:'Generators',cat:'Equipment',qty:12,unit:'units',min:3,used:0}],
+zones:[
+{id:1,name:'Riverside',x:260,y:380,r:70,pop:600,evacuated:0,shelter:2,status:'Planned'},
+{id:2,name:'Industrial Zone',x:700,y:200,r:80,pop:250,evacuated:0,shelter:1,status:'Planned'},
+{id:3,name:'Hillside',x:820,y:430,r:60,pop:180,evacuated:0,shelter:3,status:'Planned'}]});
+RX.norm=o=>{const f=RX.seed(),d=(o&&typeof o==='object'&&!Array.isArray(o))?Object.assign(f,o):RX.seed(),g=RX.seed();['incidents','teams','hospitals','shelters','resources','zones','runs','log'].forEach(k=>{if(!Array.isArray(d[k]))d[k]=g[k]});d.settings=Object.assign(g.settings,d.settings||{});if(typeof d.tick!=='number')d.tick=0;if(!['manual','nearest','severity'].includes(d.strategy))d.strategy='manual';return d};
+RX.load=()=>{let o=null;try{o=JSON.parse(localStorage.getItem(RX.KEY))}catch(e){}RX.data=RX.norm(o)};
+RX.save=()=>{try{localStorage.setItem(RX.KEY,JSON.stringify(RX.data))}catch(e){}};
+RX.reset=()=>{RX.data=RX.seed();RX.save()};
+RX.id=a=>a.reduce((m,i)=>Math.max(m,i.id),0)+1;
+RX.sum=(a,f)=>a.reduce((s,x)=>s+f(x),0);
+RX.exportJSON=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(RX.data,null,2)],{type:'application/json'}));a.download='rescuex-data.json';a.click()};
+RX.importJSON=(f,cb)=>{const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!Array.isArray(o.incidents)||!Array.isArray(o.teams)||!Array.isArray(o.shelters))throw 0;RX.data=RX.norm(o);RX.save();cb(true)}catch(e){cb(false)}};r.readAsText(f)};
+</script><script>RX.$=(s,e=document)=>e.querySelector(s);
+RX.h=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+RX.order=['dashboard','map','incidents','disasters','teams','shelters','hospitals','resources','evacuation','simulation','analytics','settings'];
+RX.reg=(n,l,i,f)=>{RX.nav.push({n,l,i});RX.views[n]=f};
+RX.toast=(m,bad)=>{const d=document.createElement('div');d.className='toast'+(bad?' bad':'');d.textContent=m;RX.$('#toasts').append(d);setTimeout(()=>d.remove(),2800)};
+RX.badge=t=>`<span class="badge b-${String(t).toLowerCase().replace(/\W/g,'')}">${RX.h(t)}</span>`;
+RX.pb=(v,m)=>{const p=m?Math.max(0,Math.min(100,Math.round(v/m*100))):0;return `<div class="pb"><i style="width:${p}%" class="${p>85?'hi':p>60?'mid':''}"></i><em>${p}%</em></div>`};
+RX.dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+RX.log=m=>{const d=RX.data;d.log.unshift({t:d.tick,m});d.log.length=Math.min(d.log.length,60)};
+RX.confirm=(m,cb)=>{const d=RX.$('#dlg');d.innerHTML=`<div class="box"><p>${RX.h(m)}</p><div class="row"><button class="btn" id="n">Cancel</button><button class="btn red" id="y">Confirm</button></div></div>`;d.showModal();RX.$('#n',d).onclick=()=>d.close();RX.$('#y',d).onclick=()=>{d.close();cb()}};
+RX.form=(title,fields,vals,cb,check)=>{const d=RX.$('#dlg');
+d.innerHTML=`<div class="box"><h3>${RX.h(title)}</h3>${fields.map(f=>{const v=vals[f.k]??f.def??'';const i=f.t==='select'?`<select name="${f.k}">${f.o.map(o=>{const [a,b]=Array.isArray(o)?o:[o,o];return `<option value="${RX.h(a)}"${String(a)===String(v)?' selected':''}>${RX.h(b)}</option>`}).join('')}</select>`:`<input name="${f.k}" type="${f.t==='number'?'number':'text'}" value="${RX.h(v)}">`;return `<label>${f.l}${i}</label>`}).join('')}<p class="err"></p><div class="row"><button class="btn" id="c">Cancel</button><button class="btn red" id="s">Save</button></div></div>`;
+d.showModal();RX.$('#c',d).onclick=()=>d.close();
+RX.$('#s',d).onclick=()=>{const o={};let e='';for(const f of fields){let v=RX.$(`[name=${f.k}]`,d).value.trim();if(f.t==='number'||f.n){if(v===''||isNaN(v)){e=f.l+' must be a number';break}v=+v;if((f.min!=null&&v<f.min)||(f.max!=null&&v>f.max)){e=`${f.l} must be ${f.min??''}–${f.max??''}`;break}}else if(!v){e=f.l+' is required';break}o[f.k]=v}
+if(!e&&check)e=check(o)||'';if(e){RX.$('.err',d).textContent=e;return}d.close();cb(o)}};
+RX.crud=(el,coll,title,fields,cols,o={})=>{const rows=RX.data[coll],F=typeof fields==='function'?fields():fields;
+el.innerHTML=`<div class="bar"><h2>${title}</h2><button class="btn red" id="add">+ Add</button></div>${o.top?o.top():''}<div class="card scroll"><table><tr>${cols.map(c=>`<th>${c[0]}</th>`).join('')}<th></th></tr>${rows.map(r=>`<tr>${cols.map(c=>`<td>${c[1](r)}</td>`).join('')}<td class="nw">${o.extra?o.extra(r).replace(/data-a/g,`data-id="${r.id}" data-a`):''}<button class="btn sm" data-id="${r.id}" data-a="edit">Edit</button><button class="btn sm" data-id="${r.id}" data-a="del">Delete</button></td></tr>`).join('')||'<tr><td>No records</td></tr>'}</table></div>`;
+const done=()=>{RX.save();RX.render()};
+el.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='add')return RX.form('Add '+title,F,{},v=>{rows.push({id:RX.id(rows),...(o.defaults?o.defaults():{}),...v});RX.log(`${title}: added ${v.name||v.title}`);RX.toast('Added');done()},o.check);
+const r=rows.find(x=>x.id==b.dataset.id);if(!r)return;const a=b.dataset.a;
+if(a==='edit')RX.form('Edit '+title,F,r,v=>{Object.assign(r,v);RX.toast('Saved');done()},o.check);
+else if(a==='del')RX.confirm('Delete this record?',()=>{rows.splice(rows.indexOf(r),1);RX.toast('Deleted');done()});
+else if(o.act)o.act(a,r,done)}};
+RX.render=()=>{const v=(location.hash.slice(1));RX.cur=RX.views[v]?v:'dashboard';RX.$('#menu').innerHTML=RX.nav.map(x=>`<a href="#${x.n}" class="${x.n===RX.cur?'on':''}">${x.i} ${x.l}</a>`).join('');RX.$('#title').textContent=(RX.nav.find(x=>x.n===RX.cur)||{}).l;RX.$('#nav').classList.remove('open');RX.views[RX.cur](RX.$('#view'))};
+RX.refresh=()=>{RX.$('#clock').textContent='T+'+RX.data.tick;if(RX.cur==='map')RX.mapDraw();else if(!['settings','disasters'].includes(RX.cur)&&!RX.$('#dlg').open)RX.render()};
+RX.tick=()=>{RX.step();RX.save();RX.refresh()};
+RX.toggle=()=>{if(RX.iv){clearInterval(RX.iv);RX.iv=null}else RX.iv=setInterval(RX.tick,1000/RX.data.settings.speed);RX.$('#play').textContent=RX.iv?'⏸ Pause':'▶ Start'};
+RX.theme=()=>document.documentElement.dataset.theme=RX.data.settings.theme;
+RX.reg('settings','Settings','⚙',el=>{const s=RX.data.settings;
+el.innerHTML=`<div class="card"><h3>Settings</h3><div class="box"><label>Theme<select id="th"><option value="dark">Dark navy</option><option value="light">Light</option></select></label><label>Simulation speed (ticks/sec)<select id="sp">${[1,2,4].map(n=>`<option>${n}</option>`).join('')}</select></label><label>Random new incidents<select id="rn"><option value="0">Off</option><option value="1">On</option></select></label></div></div><div class="card row" style="justify-content:flex-start;flex-wrap:wrap"><button class="btn" id="ex">⬇ Export JSON</button><label class="btn">⬆ Import JSON<input type="file" id="im" accept=".json" hidden></label><button class="btn red" id="rs">Reset sample data</button></div>`;
+RX.$('#th').value=s.theme;RX.$('#sp').value=s.speed;RX.$('#rn').value=s.random?1:0;
+RX.$('#th').onchange=e=>{s.theme=e.target.value;RX.theme();RX.save()};
+RX.$('#sp').onchange=e=>{s.speed=+e.target.value;RX.save();if(RX.iv){RX.toggle();RX.toggle()}RX.toast('Speed updated')};
+RX.$('#rn').onchange=e=>{s.random=e.target.value==='1';RX.save();RX.toast('Saved')};
+RX.$('#ex').onclick=()=>{RX.exportJSON();RX.toast('Exported')};
+RX.$('#im').onchange=e=>{const f=e.target.files[0];if(f)RX.importJSON(f,ok=>{RX.toast(ok?'Imported':'Invalid file',!ok);if(ok){RX.theme();RX.render()}})};
+RX.$('#rs').onclick=()=>RX.confirm('Reset all data to sample scenario?',()=>{RX.reset();RX.theme();RX.render();RX.toast('Data reset')})});
+RX._init=()=>{RX.load();RX.nav.sort((a,b)=>RX.order.indexOf(a.n)-RX.order.indexOf(b.n));RX.theme();
+RX.$('#burger').onclick=()=>RX.$('#nav').classList.toggle('open');RX.$('#play').onclick=RX.toggle;
+RX.$('#restart').onclick=()=>RX.confirm('Restart simulation and reset to sample scenario?',()=>{if(RX.iv)RX.toggle();const st=RX.data.settings;RX.reset();RX.data.settings=st;RX.save();RX.render();RX.refresh();RX.toast('Simulation restarted')});
+addEventListener('hashchange',RX.render);addEventListener('resize',()=>RX.cur==='map'&&RX.render());RX.render();RX.refresh()};
+RX.init=()=>{const b=RX.$('#boot');if(b)b.remove();try{RX._init()}catch(e){console.error(e);document.body.insertAdjacentHTML('afterbegin','<div class="note" style="position:fixed;z-index:99;top:10px;left:10px;right:10px;background:#300;color:#fff">RescueX error: '+RX.h(e.message)+' <button onclick="localStorage.removeItem(\''+RX.KEY+'\');location.reload()">Reset saved data &amp; reload</button></div>')}};
+</script><script>RX.reg('dashboard','Command Center','◈',el=>{const d=RX.data,act=d.incidents.filter(i=>i.status!=='Resolved'),av=d.teams.filter(t=>t.status==='Available').length,cap=RX.sum(d.shelters,s=>s.capacity),oc=RX.sum(d.shelters,s=>s.occupied),low=d.resources.filter(r=>r.qty<=r.min).length,beds=RX.sum(d.hospitals,h=>h.beds-h.occupied);
+const K=[['Active incidents',act.length,'red'],['Teams available',av+' / '+d.teams.length,'ok'],['Shelter occupancy',Math.round(oc/(cap||1)*100)+'%','or'],['Free hospital beds',beds,'ok'],['Low resources',low,low?'red':'ok'],['Sim score',RX.score(d),'or']];
+el.innerHTML=`<div class="note">⚠ Educational simulation. All values are simulated and are not real emergency instructions.</div><div class="kpis">${K.map(k=>`<div class="card kpi ${k[2]}"><small>${k[0]}</small><b>${k[1]}</b></div>`).join('')}</div><div class="grid2"><div class="card"><h3>Active incidents by severity</h3>${['Critical','High','Medium','Low'].map(s=>`<div class="srow">${RX.badge(s)}${RX.pb(act.filter(i=>i.sev===s).length,act.length||1)}</div>`).join('')}</div><div class="card"><h3>Recent activity</h3><ul class="tl">${d.log.map(l=>`<li><small>T+${l.t}</small>${RX.h(l.m)}</li>`).join('')||'<li>No activity yet – press Start.</li>'}</ul></div></div>`});
+</script><script>RX.map={s:1,ox:0,oy:0,sel:null};
+RX.roads=[[[0,300],[1000,300]],[[500,0],[500,600]],[[0,520],[400,450],[1000,500]],[[150,0],[260,380],[150,600]],[[500,90],[700,200],[820,430]]];
+RX.reg('map','Emergency Map','⌖',el=>{
+el.innerHTML=`<div class="bar"><h2>Emergency Map <small>(simulated area)</small></h2><div><button class="btn" data-z="1.25">＋</button> <button class="btn" data-z="0.8">－</button> <button class="btn" data-z="0">Reset</button></div></div><div class="card mapw"><canvas id="cv"></canvas></div><div class="card" id="mi">Tap an object. Drag to pan; wheel or buttons to zoom. Legend: ● incident, ■ hospital, ▲ shelter, ◆ team, dashed circle = evacuation zone.</div>`;
+const cv=RX.$('#cv'),m=RX.map;cv.width=cv.parentElement.clientWidth;cv.height=Math.min(560,innerHeight*.6);cv.style.touchAction='none';
+const zoom=(f,px=cv.width/2,py=cv.height/2)=>{const n=Math.max(.6,Math.min(5,m.s*f));f=n/m.s;m.ox=px-(px-m.ox)*f;m.oy=py-(py-m.oy)*f;m.s=n;RX.mapDraw()};
+el.querySelectorAll('[data-z]').forEach(b=>b.onclick=()=>{const z=+b.dataset.z;z?zoom(z):(m.s=1,m.ox=m.oy=0,RX.mapDraw())});
+cv.onwheel=e=>{e.preventDefault();const r=cv.getBoundingClientRect();zoom(e.deltaY<0?1.15:.87,e.clientX-r.left,e.clientY-r.top)};
+const ps=new Map(),pinch=()=>{const a=[...ps.values()];return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)};let dr=null,pd=0;
+cv.onpointerdown=e=>{ps.set(e.pointerId,{x:e.clientX,y:e.clientY});cv.setPointerCapture(e.pointerId);if(ps.size===2){pd=pinch();dr=null}else dr={x:e.clientX,y:e.clientY,ox:m.ox,oy:m.oy,mv:false}};
+cv.onpointermove=e=>{if(!ps.has(e.pointerId))return;ps.set(e.pointerId,{x:e.clientX,y:e.clientY});if(ps.size===2){const n=pinch(),a=[...ps.values()],r=cv.getBoundingClientRect();if(pd)zoom(n/pd,(a[0].x+a[1].x)/2-r.left,(a[0].y+a[1].y)/2-r.top);pd=n;return}if(!dr)return;const dx=e.clientX-dr.x,dy=e.clientY-dr.y;if(Math.abs(dx)+Math.abs(dy)>5)dr.mv=true;if(dr.mv){m.ox=dr.ox+dx;m.oy=dr.oy+dy;RX.mapDraw()}};
+cv.onpointerup=cv.onpointercancel=e=>{ps.delete(e.pointerId);pd=0;if(dr&&!dr.mv&&e.type==='pointerup'){const r=cv.getBoundingClientRect(),k=cv.width/1000*m.s;RX.mapPick({x:(e.clientX-r.left-m.ox)/k,y:(e.clientY-r.top-m.oy)/k})}dr=null};
+RX.mapDraw()});
+RX.mapPick=p=>{const d=RX.data;let best=null,bd=1e9;[['Incident',d.incidents.filter(i=>i.status!=='Resolved'),'title'],['Hospital',d.hospitals,'name'],['Shelter',d.shelters,'name'],['Team',d.teams,'name']].forEach(([t,a,n])=>a.forEach(o=>{const q=RX.dist(o,p);if(q<bd){bd=q;best={t,o,n:o[n]}}}));
+const near=best&&bd<22/RX.map.s,x=Math.round(p.x),y=Math.round(p.y);RX.map.sel={x,y};
+RX.$('#mi').innerHTML=(near?`<b>${best.t}: ${RX.h(best.n)}</b><br>`+(best.t==='Incident'?`${best.o.sev} · ${best.o.status} · progress ${Math.round(best.o.progress)}%`:best.t==='Hospital'?`Beds free ${best.o.beds-best.o.occupied}/${best.o.beds}`:best.t==='Shelter'?`Occupancy ${best.o.occupied}/${best.o.capacity}`:`${best.o.type} · ${best.o.status}`)+'<br>':'')+`Location (${x}, ${y}) <button class="btn sm" id="ri">Report incident here</button>`;
+RX.$('#ri').onclick=()=>RX.incForm({x,y})};
+RX.mapDraw=()=>{const cv=RX.$('#cv');if(!cv)return;const c=cv.getContext('2d'),m=RX.map,d=RX.data,k=cv.width/1000*m.s,X=x=>x*k+m.ox,Y=y=>y*k+m.oy,L=(t,x,y,col)=>{c.fillStyle=col||'#cfe0ff';c.font='11px sans-serif';c.textAlign='center';c.fillText(t,X(x),Y(y))};
+c.fillStyle='#0c1a2e';c.fillRect(0,0,cv.width,cv.height);c.strokeStyle='rgba(255,255,255,.05)';c.lineWidth=1;for(let i=0;i<=1000;i+=50){c.beginPath();c.moveTo(X(i),Y(0));c.lineTo(X(i),Y(600));c.moveTo(X(0),Y(i));c.lineTo(X(1000),Y(i));c.stroke()}
+c.strokeStyle='#1f5f99';c.lineWidth=22*k;c.beginPath();c.moveTo(X(0),Y(420));c.bezierCurveTo(X(250),Y(300),X(300),Y(500),X(450),Y(600));c.stroke();
+c.strokeStyle='#4a5b75';c.lineWidth=5*k;RX.roads.forEach(r=>{c.beginPath();r.forEach((p,i)=>i?c.lineTo(X(p[0]),Y(p[1])):c.moveTo(X(p[0]),Y(p[1])));c.stroke()});
+d.zones.forEach(z=>{c.setLineDash([6,5]);c.strokeStyle='#ff8a1f';c.fillStyle='rgba(255,138,31,.12)';c.lineWidth=2;c.beginPath();c.arc(X(z.x),Y(z.y),z.r*k,0,7);c.fill();c.stroke();const s=d.shelters.find(q=>q.id===z.shelter);if(s){c.strokeStyle='#2fb86b';c.beginPath();c.moveTo(X(z.x),Y(z.y));c.lineTo(X(s.x),Y(s.y));c.stroke();L((RX.dist(z,s)*.05).toFixed(1)+' km',(z.x+s.x)/2,(z.y+s.y)/2,'#7be3a8')}c.setLineDash([]);L(z.name,z.x,z.y-z.r-4,'#ffb86b')});
+d.hospitals.forEach(h=>{c.fillStyle='#fff';c.fillRect(X(h.x)-8,Y(h.y)-8,16,16);c.fillStyle='#e5392b';c.fillRect(X(h.x)-1.5,Y(h.y)-6,3,12);c.fillRect(X(h.x)-6,Y(h.y)-1.5,12,3);L(h.name,h.x,h.y+22)});
+d.shelters.forEach(s=>{c.fillStyle='#2fb86b';c.beginPath();c.moveTo(X(s.x),Y(s.y)-10);c.lineTo(X(s.x)+10,Y(s.y)+8);c.lineTo(X(s.x)-10,Y(s.y)+8);c.fill();L(s.name,s.x,s.y+22)});
+d.teams.forEach(t=>{c.fillStyle=t.status==='Deployed'?'#4da3ff':'#8fa3bf';c.beginPath();c.moveTo(X(t.x),Y(t.y)-8);c.lineTo(X(t.x)+8,Y(t.y));c.lineTo(X(t.x),Y(t.y)+8);c.lineTo(X(t.x)-8,Y(t.y));c.fill();L(t.name,t.x,t.y-12,'#9cc8ff')});
+d.incidents.filter(i=>i.status!=='Resolved').forEach(i=>{const r=(6+RX.SEV[i.sev]*3)*Math.max(.8,m.s*.8);c.fillStyle=i.status==='Responding'?'rgba(255,138,31,.85)':'rgba(229,57,43,.9)';c.beginPath();c.arc(X(i.x),Y(i.y),r,0,7);c.fill();c.strokeStyle='#fff';c.lineWidth=2;c.stroke();L(i.type,i.x,i.y-r/m.s-4,'#fff')})};
+</script><script>RX.TYPES=['Flood','Earthquake','Fire','Cyclone','Accident'];
+RX.SEV={Low:1,Medium:2,High:3,Critical:4};
+RX.ih=(i,m)=>{(i.history=i.history||[]).push({t:RX.data.tick,m})};
+RX.newInc=o=>{const d=RX.data;const i={id:RX.id(d.incidents),status:'Reported',progress:0,team:0,created:d.tick,...o};i.history=[{t:d.tick,m:"Reported ("+i.sev+")"}];d.incidents.push(i);RX.log(`New incident #${i.id}: ${i.title}`);return i};
+RX.spawn=(type,n=1)=>{const sv=['Medium','High','Critical'],t={Flood:'Flash flood',Earthquake:'Earthquake damage',Fire:'Fire outbreak',Cyclone:'Cyclone landfall',Accident:'Road accident'};
+for(let i=0;i<n;i++){const s=sv[Math.floor(Math.random()*3)];RX.newInc({type,title:`${t[type]} – Sector ${Math.floor(Math.random()*90)+10}`,sev:s,victims:5*RX.SEV[s]+Math.floor(Math.random()*15),x:Math.round(80+Math.random()*840),y:Math.round(60+Math.random()*480)})}};
+RX.incFields=[{k:'title',l:'Title'},{k:'type',l:'Type',t:'select',o:[...RX.TYPES,'Custom']},{k:'sev',l:'Severity',t:'select',o:['Low','Medium','High','Critical']},{k:'status',l:'Status',t:'select',o:['Reported','Responding','Resolved']},{k:'victims',l:'Estimated victims',t:'number',min:0,max:100000,def:10},{k:'x',l:'Map X (0-1000)',t:'number',min:0,max:1000,def:500},{k:'y',l:'Map Y (0-600)',t:'number',min:0,max:600,def:300}];
+RX.incForm=v=>RX.form('Report incident',RX.incFields,v,o=>{RX.newInc(o);RX.save();RX.toast('Incident reported');RX.render()});
+RX.reg('disasters','Disaster Simulation','⚡',el=>{const D={Flood:'Rising river levels flood low-lying areas.',Earthquake:'Structural collapses and trapped victims.',Fire:'Rapidly spreading fire outbreak.',Cyclone:'High winds and storm surge.',Accident:'Multi-vehicle road accident.'};
+el.innerHTML=`<div class="note">Triggers create simulated incidents at random map locations.</div><div class="cards">${RX.TYPES.map(t=>`<div class="card"><h3>${t}</h3><p>${D[t]}</p><button class="btn red" data-t="${t}">Trigger ${t}</button></div>`).join('')}<div class="card"><h3>Custom scenario</h3><p>Define your own incident.</p><button class="btn red" id="cu">Create custom</button></div></div>`;
+el.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='cu')return RX.incForm({type:'Custom'});RX.spawn(b.dataset.t,1+Math.floor(Math.random()*2));RX.save();RX.toast(b.dataset.t+' scenario triggered')}});
+</script><script>RX.reg('teams','Rescue Teams','✚',el=>{const d=RX.data;RX.crud(el,'teams','Team',[{k:'name',l:'Name'},{k:'type',l:'Type',t:'select',o:['Medical','Fire','Search & Rescue','Water Rescue','Logistics']},{k:'members',l:'Members',t:'number',min:1,max:500,def:6},{k:'vehicle',l:'Vehicle'},{k:'equipment',l:'Equipment'},{k:'status',l:'Availability',t:'select',o:['Available','Off-duty']},{k:'x',l:'Map X',t:'number',min:0,max:1000,def:500},{k:'y',l:'Map Y',t:'number',min:0,max:600,def:300}],
+[['Name',t=>RX.h(t.name)],['Type',t=>t.type],['Crew',t=>t.members],['Vehicle',t=>RX.h(t.vehicle)],['Equipment',t=>RX.h(t.equipment)],['Status',t=>RX.badge(t.status)],['Mission',t=>{const i=d.incidents.find(x=>x.id===t.incident);const h=t.hosp&&d.hospitals.find(x=>x.id===t.hosp);return i?RX.h(i.title)+RX.pb(i.progress,100):h?'Hospital: '+RX.h(h.name):'—'}]],
+{defaults:()=>({incident:0,busy:0}),extra:t=>t.status==='Available'?'<button class="btn sm" data-a="assign">Assign</button>':'',
+act:(a,t,done)=>{const o=d.incidents.filter(i=>i.status==='Reported'&&!i.team);if(!o.length)return RX.toast('No unassigned incidents',1);RX.form('Assign '+t.name,[{k:'i',l:'Incident',t:'select',n:1,o:o.map(i=>[i.id,`#${i.id} ${i.title} (${i.sev})`])}],{},v=>{RX.assign(v.i,t.id);RX.toast('Team assigned');done()})}})});
+</script><script>RX.reg('shelters','Shelters','⌂',el=>{RX.crud(el,'shelters','Shelter',[{k:'name',l:'Name'},{k:'capacity',l:'Capacity',t:'number',min:1,max:100000,def:100},{k:'occupied',l:'Occupied',t:'number',min:0,max:100000,def:0},{k:'food',l:'Food (packs)',t:'number',min:0,def:200},{k:'water',l:'Water (L)',t:'number',min:0,def:400},{k:'medical',l:'Medical supplies',t:'number',min:0,def:20},{k:'status',l:'Status',t:'select',o:['Open','Closed']},{k:'x',l:'Map X',t:'number',min:0,max:1000,def:500},{k:'y',l:'Map Y',t:'number',min:0,max:600,def:300}],
+[['Name',s=>RX.h(s.name)],['Occupancy',s=>`${s.occupied}/${s.capacity}`+RX.pb(s.occupied,s.capacity)],['Food',s=>Math.round(s.food)],['Water',s=>Math.round(s.water)],['Medical',s=>s.medical],['Status',s=>RX.badge(s.status==='Closed'?'Closed':s.occupied>=s.capacity?'Full':'Open')]],
+{check:o=>o.occupied>o.capacity?'Occupied cannot exceed capacity':''})});
+</script><script>RX.reg('hospitals','Hospitals','✛',el=>{const d=RX.data;RX.crud(el,'hospitals','Hospital',[{k:'name',l:'Name'},{k:'beds',l:'Total beds',t:'number',min:1,max:10000,def:50},{k:'occupied',l:'Occupied beds',t:'number',min:0,max:10000,def:0},{k:'icu',l:'ICU units',t:'number',min:0,def:2},{k:'doctors',l:'Doctors',t:'number',min:0,def:5},{k:'medKits',l:'Medical kits',t:'number',min:0,def:20},{k:'x',l:'Map X',t:'number',min:0,max:1000,def:500},{k:'y',l:'Map Y',t:'number',min:0,max:600,def:300}],
+[['Name',h=>RX.h(h.name)],['Beds',h=>`${h.beds-h.occupied} free`+RX.pb(h.occupied,h.beds)],['ICU',h=>h.icu],['Doctors',h=>h.doctors],['Med kits',h=>h.medKits]],
+{check:o=>o.occupied>o.beds?'Occupied beds cannot exceed total':'',extra:()=>'<button class="btn sm" data-a="in">Patient intake</button><button class="btn sm" data-a="med">Med team</button>',
+act:(a,h,done)=>{if(a==='in')RX.form('Patient intake – '+h.name,[{k:'n',l:'Patients',t:'number',min:1,max:1000,def:5}],{},v=>{const n=Math.min(v.n,h.beds-h.occupied);h.occupied+=n;RX.log(`${h.name}: ${n} patients admitted`);RX.toast(n<v.n?`Only ${n} beds free`:'Patients admitted',n<v.n);done()});
+else{const ts=d.teams.filter(t=>t.status==='Available'&&t.type==='Medical'),m=d.resources.find(r=>r.cat==='Medicine');if(!ts.length)return RX.toast('No available Medical team',1);if(!m||m.qty<20)return RX.toast('Need 20 medicine kits',1);RX.form('Allocate medical team – '+h.name,[{k:'t',l:'Medical team',t:'select',n:1,o:ts.map(t=>[t.id,t.name+' ('+t.members+' crew)'])},{k:'dur',l:'Duration (ticks)',t:'number',min:5,max:200,def:20}],{},v=>{const t=d.teams.find(x=>x.id===v.t);m.qty-=20;m.used=(m.used||0)+20;t.status='Deployed';t.hosp=h.id;t.until=d.tick+v.dur;t.x=h.x;t.y=h.y;h.doctors+=t.members;h.medKits+=20;RX.log(t.name+' allocated to '+h.name);RX.toast('Team allocated');done()})}}})});
+</script><script>RX.use=(cat,n)=>{const r=RX.data.resources.find(x=>x.cat===cat);if(r){const u=Math.min(r.qty,n);r.qty-=u;r.used=(r.used||0)+u}};
+RX.reg('resources','Resources','▤',el=>{RX.crud(el,'resources','Resource',[{k:'name',l:'Name'},{k:'cat',l:'Category',t:'select',o:['Food','Water','Medicine','Vehicle','Equipment']},{k:'qty',l:'Quantity',t:'number',min:0,def:100},{k:'unit',l:'Unit'},{k:'min',l:'Low threshold',t:'number',min:0,def:10}],
+[['Name',r=>RX.h(r.name)],['Category',r=>r.cat],['Stock',r=>`${Math.round(r.qty)} ${RX.h(r.unit)}`],['Consumed',r=>Math.round(r.used||0)],['Level',r=>RX.badge(r.qty<=r.min?'Critical':'Open')]],
+{defaults:()=>({used:0}),extra:()=>'<button class="btn sm" data-a="use">Allocate</button><button class="btn sm" data-a="add">Restock</button>',
+act:(a,r,done)=>RX.form((a==='use'?'Allocate ':'Restock ')+r.name,[{k:'n',l:'Amount',t:'number',min:1,def:10}],{},v=>{if(a==='use'){if(v.n>r.qty)return RX.toast('Insufficient stock',1);r.qty-=v.n;r.used=(r.used||0)+v.n}else r.qty+=v.n;RX.log(`${r.name} ${a==='use'?'allocated':'restocked'}: ${v.n}`);RX.toast('Updated');done()})})});
+</script><script>RX.reg('evacuation','Evacuation Planner','➜',el=>{const d=RX.data;RX.crud(el,'zones','Evacuation zone',()=>[{k:'name',l:'Zone name'},{k:'shelter',l:'Safe shelter',t:'select',n:1,o:d.shelters.map(s=>[s.id,s.name])},{k:'pop',l:'Population',t:'number',min:1,max:100000,def:100},{k:'evacuated',l:'Evacuated',t:'number',min:0,def:0},{k:'r',l:'Radius (map units)',t:'number',min:10,max:300,def:60},{k:'x',l:'Map X',t:'number',min:0,max:1000,def:500},{k:'y',l:'Map Y',t:'number',min:0,max:600,def:300},{k:'status',l:'Status',t:'select',o:['Planned','Evacuating','Complete']}],
+[['Zone',z=>RX.h(z.name)],['Shelter',z=>RX.h((d.shelters.find(s=>s.id===z.shelter)||{}).name||'—')],['Route ≈km*',z=>{const s=d.shelters.find(q=>q.id===z.shelter);return s?(RX.dist(z,s)*.05).toFixed(1):'—'}],['Progress',z=>`${z.evacuated}/${z.pop}`+RX.pb(z.evacuated,z.pop)],['Status',z=>RX.badge(z.status)]],
+{top:()=>'<p class="note">*Distance from map coordinates (1 unit = 50 m), simulated estimate only. Routes appear on the Emergency Map.</p>',check:o=>o.evacuated>o.pop?'Evacuated cannot exceed population':'',
+extra:z=>z.status==='Planned'?'<button class="btn sm" data-a="go">Start</button>':'',act:(a,z,done)=>{z.status='Evacuating';RX.log('Evacuation started: '+z.name);RX.toast('Evacuation started');done()}})});
+</script><script>RX.incDetail=(i,done)=>{const d=RX.data,t=d.teams.find(x=>x.id===i.team),dl=RX.$('#dlg'),open=i.status!=='Resolved';
+dl.innerHTML=`<div class="box"><h3>#${i.id} ${RX.h(i.title)}</h3><p>${RX.badge(i.sev)} ${RX.badge(i.status)} · ${i.type}</p><p>Victims: ${i.victims} · Location (${Math.round(i.x)}, ${Math.round(i.y)}) · Team: ${t?RX.h(t.name):'—'}</p>${RX.pb(i.progress,100)}<h4>History</h4><ul class="tl">${(i.history||[]).slice().reverse().map(h=>`<li><small>T+${h.t}</small>${RX.h(h.m)}</li>`).join('')||'<li>No history</li>'}</ul><div class="row">${open&&!i.team?'<button class="btn" id="as">Assign team</button>':''}${open?'<button class="btn" id="rs">Mark resolved</button>':''}<button class="btn red" id="cl">Close</button></div></div>`;dl.showModal();
+RX.$('#cl',dl).onclick=()=>dl.close();
+if(RX.$('#rs',dl))RX.$('#rs',dl).onclick=()=>{i.status='Resolved';i.progress=100;i.resolvedAt=d.tick;RX.ih(i,'Marked resolved manually');RX.log('Incident #'+i.id+' marked resolved');dl.close();RX.toast('Incident resolved');done()};
+if(RX.$('#as',dl))RX.$('#as',dl).onclick=()=>{dl.close();RX.assignIncident(i,done)}};
+RX.assignIncident=(i,done)=>{const d=RX.data,t=d.teams.filter(x=>x.status==='Available');if(!t.length)return RX.toast('No available teams',1);RX.form('Assign team',[{k:'t',l:'Team',t:'select',n:1,o:t.map(x=>[x.id,`${x.name} (${x.type})`])}],{},v=>{RX.assign(i.id,v.t);RX.toast('Team assigned');done()})};
+RX.reg('incidents','Incidents','⚠',el=>{const d=RX.data;RX.crud(el,'incidents','Incident',RX.incFields,
+[['#',i=>i.id],['Title',i=>RX.h(i.title)],['Type',i=>i.type],['Severity',i=>RX.badge(i.sev)],['Status',i=>RX.badge(i.status)],['Victims',i=>i.victims],['Team',i=>RX.h((d.teams.find(t=>t.id===i.team)||{}).name||'—')],['Progress',i=>RX.pb(i.progress,100)],['Created',i=>'T+'+i.created]],
+{defaults:()=>({progress:0,team:0,created:d.tick,history:[{t:d.tick,m:'Reported'}]}),extra:i=>'<button class="btn sm" data-a="dt">Details</button>'+(i.status==='Reported'&&!i.team?'<button class="btn sm" data-a="as">Assign team</button>':''),
+act:(a,i,done)=>a==='dt'?RX.incDetail(i,done):RX.assignIncident(i,done)})});
+</script><script>RX.assign=(iid,tid)=>{const d=RX.data,i=d.incidents.find(x=>x.id==iid),t=d.teams.find(x=>x.id==tid);if(!i||!t||t.status!=='Available'||i.team)return false;i.team=t.id;i.status='Responding';if(i.respondedAt==null)i.respondedAt=d.tick;t.status='Deployed';t.incident=i.id;RX.ih(i,'Assigned '+t.name);RX.log(`${t.name} assigned to #${i.id} ${i.title}`);return true};
+RX.avgResp=d=>{const a=d.incidents.filter(i=>i.respondedAt!=null);return a.length?RX.sum(a,i=>i.respondedAt-i.created)/a.length:0};
+RX.score=d=>Math.round(d.incidents.filter(i=>i.status==='Resolved').length*100+RX.sum(d.zones,z=>z.evacuated)*.5-RX.sum(d.incidents,i=>(i.wait||0)*RX.SEV[i.sev])*.5-d.incidents.filter(i=>i.status!=='Resolved').length*30);
+RX.step=()=>{const d=RX.data;d.tick++;
+d.teams.forEach(t=>{if(t.hosp&&d.tick>=t.until){const h=d.hospitals.find(x=>x.id===t.hosp);if(h)h.doctors=Math.max(0,h.doctors-t.members);t.hosp=0;t.status='Available';RX.log(t.name+' released from hospital duty')}});
+d.teams.forEach(t=>{const i=d.incidents.find(x=>x.id===t.incident);if(t.incident&&(!i||i.status==='Resolved'||i.team!==t.id)){t.incident=0;if(t.status==='Deployed')t.status='Available'}if(t.status==='Deployed'&&!t.incident&&!t.hosp)t.status='Available'});
+d.incidents.forEach(i=>{if(i.team&&!d.teams.find(t=>t.id===i.team))i.team=0;if(i.status==='Responding'&&!i.team)i.status='Reported';if(i.status==='Reported'&&!i.team){i.wait=(i.wait||0)+1;if(i.wait%5===0)i.victims++}});
+if(d.strategy!=='manual'){const q=d.incidents.filter(i=>i.status==='Reported'&&!i.team);if(d.strategy==='severity')q.sort((a,b)=>RX.SEV[b.sev]-RX.SEV[a.sev]);q.forEach(i=>{const av=d.teams.filter(t=>t.status==='Available').sort((a,b)=>RX.dist(a,i)-RX.dist(b,i));if(av.length)RX.assign(i.id,av[0].id)})}
+d.teams.forEach(t=>{if(t.status!=='Deployed')return;t.busy=(t.busy||0)+1;const i=d.incidents.find(x=>x.id===t.incident);if(!i)return;const D=RX.dist(t,i);if(D>12){const f=Math.min(1,18/D);t.x+=(i.x-t.x)*f;t.y+=(i.y-t.y)*f}else{i.progress=Math.min(100,i.progress+[0,12,8,5,3][RX.SEV[i.sev]]*(.5+t.members/20));if(i.progress>=100){i.status='Resolved';i.resolvedAt=d.tick;RX.ih(i,'Resolved by '+t.name);const h=d.hospitals.filter(h=>h.occupied<h.beds).sort((a,b)=>RX.dist(a,i)-RX.dist(b,i))[0];if(h)h.occupied=Math.min(h.beds,h.occupied+Math.round(i.victims*.3));RX.log(`Incident #${i.id} resolved by ${t.name}`)}}});
+d.zones.forEach(z=>{if(z.status!=='Evacuating')return;const s=d.shelters.find(x=>x.id===z.shelter);if(!s||s.status==='Closed')return;const n=Math.min(Math.ceil(z.pop*.06),z.pop-z.evacuated,s.capacity-s.occupied);if(n>0){z.evacuated+=n;s.occupied+=n;RX.use('Food',n*.2);RX.use('Water',n*.5)}if(z.evacuated>=z.pop){z.status='Complete';RX.log('Evacuation complete: '+z.name)}});
+d.shelters.forEach(s=>{s.food=Math.max(0,s.food-s.occupied*.02);s.water=Math.max(0,s.water-s.occupied*.04)});
+if(d.settings.random&&Math.random()<.05)RX.spawn(RX.TYPES[Math.floor(Math.random()*5)],1)};
+RX.runBatch=st=>{const keep=RX.data;RX.data=RX.seed();const d=RX.data;d.strategy=st;d.zones.forEach(z=>z.status='Evacuating');let n=0;while(n++<300){RX.step();if(!d.incidents.some(i=>i.status!=='Resolved')&&!d.zones.some(z=>z.status==='Evacuating'))break}
+const r={strategy:st,score:RX.score(d),resolved:d.incidents.filter(i=>i.status==='Resolved').length,resp:RX.avgResp(d).toFixed(1),ticks:d.tick};RX.data=keep;keep.runs.push(r)};
+RX.reg('simulation','Scenario Evaluation','▶',el=>{const d=RX.data,best=Math.max(...d.runs.map(r=>r.score),-1e9);
+el.innerHTML=`<div class="note">Runs the sample scenario headlessly under each dispatch strategy and compares simulated outcomes.</div><div class="card"><div class="box"><label>Live dispatch strategy<select id="st"><option value="manual">Manual (you assign teams)</option><option value="nearest">Auto – nearest team, first come</option><option value="severity">Auto – highest severity first</option></select></label><p>Tick T+${d.tick} · Score <b>${RX.score(d)}</b> · Use ▶ Start / ⏸ Pause / ↺ Restart in the top bar.</p><div class="row" style="justify-content:flex-start;flex-wrap:wrap"><button class="btn red" id="cmp">Compare all strategies</button><button class="btn" id="clr">Clear results</button></div></div></div><div class="card scroll"><table><tr><th>Strategy</th><th>Score</th><th>Resolved</th><th>Avg response (ticks)</th><th>Ticks used</th></tr>${d.runs.map(r=>`<tr style="${r.score===best?'color:var(--ok);font-weight:700':''}"><td>${r.strategy}</td><td>${r.score}</td><td>${r.resolved}/4</td><td>${r.resp}</td><td>${r.ticks}</td></tr>`).join('')||'<tr><td>No runs yet</td></tr>'}</table></div>`;
+RX.$('#st').value=d.strategy;RX.$('#st').onchange=e=>{d.strategy=e.target.value;RX.save();RX.toast('Strategy: '+d.strategy)};
+RX.$('#cmp').onclick=()=>{d.runs=[];['manual','nearest','severity'].forEach(RX.runBatch);RX.save();RX.toast('Comparison complete');RX.render()};
+RX.$('#clr').onclick=()=>RX.confirm('Clear results?',()=>{d.runs=[];RX.save();RX.render()})});
+</script><script>RX.bars=(id,labels,vals,color,max)=>{const cv=RX.$('#'+id);if(!cv)return;cv.width=cv.parentElement.clientWidth-28;cv.height=170;const c=cv.getContext('2d'),m=max||Math.max(1,...vals),w=cv.width/labels.length,tx=getComputedStyle(document.body).color;c.textAlign='center';c.font='11px sans-serif';vals.forEach((v,i)=>{const h=v/m*110;c.fillStyle=color;c.fillRect(i*w+w*.2,130-h,w*.6,h);c.fillStyle=tx;c.fillText(Math.round(v*10)/10,i*w+w/2,125-h);c.fillText(String(labels[i]).slice(0,11),i*w+w/2,150)})};
+RX.reg('analytics','Analytics & Reports','▥',el=>{const d=RX.data,res=d.incidents.filter(i=>i.status==='Resolved').length;
+el.innerHTML=`<div class="bar"><h2>Disaster Report (simulated)</h2><button class="btn red" id="pr">🖨 Print report</button></div><div class="kpis">${[['Avg response time',RX.avgResp(d).toFixed(1)+' ticks'],['Incidents resolved',res+'/'+d.incidents.length],['People evacuated',RX.sum(d.zones,z=>z.evacuated)],['Score',RX.score(d)]].map(k=>`<div class="card kpi or"><small>${k[0]}</small><b>${k[1]}</b></div>`).join('')}</div><div class="grid2">${[['Incident trend by type','c1'],['Team utilization %','c2'],['Shelter occupancy %','c3'],['Resource consumption','c4']].map(c=>`<div class="card"><h3>${c[0]}</h3><canvas id="${c[1]}"></canvas></div>`).join('')}</div><div class="card scroll"><h3>Incident history</h3><table><tr><th>#</th><th>Title</th><th>Severity</th><th>Status</th><th>Response</th></tr>${d.incidents.map(i=>`<tr><td>${i.id}</td><td>${RX.h(i.title)}</td><td>${i.sev}</td><td>${i.status}</td><td>${i.respondedAt!=null?i.respondedAt-i.created+' ticks':'—'}</td></tr>`).join('')}</table></div><p class="note">All figures are simulated for education only.</p>`;
+RX.$('#pr').onclick=()=>window.print();
+const ty=[...RX.TYPES,'Custom'];RX.bars('c1',ty,ty.map(t=>d.incidents.filter(i=>i.type===t).length),'#e5392b');
+RX.bars('c2',d.teams.map(t=>t.name),d.teams.map(t=>d.tick?Math.min(100,(t.busy||0)/d.tick*100):0),'#4da3ff',100);
+RX.bars('c3',d.shelters.map(s=>s.name),d.shelters.map(s=>s.occupied/s.capacity*100),'#2fb86b',100);
+RX.bars('c4',d.resources.map(r=>r.name),d.resources.map(r=>r.used||0),'#ff8a1f')});
+</script>
+<script>window.RX?RX.init():0</script></body></html>

@@ -1,0 +1,5 @@
+RX.use=(cat,n)=>{const r=RX.data.resources.find(x=>x.cat===cat);if(r){const u=Math.min(r.qty,n);r.qty-=u;r.used=(r.used||0)+u}};
+RX.reg('resources','Resources','▤',el=>{RX.crud(el,'resources','Resource',[{k:'name',l:'Name'},{k:'cat',l:'Category',t:'select',o:['Food','Water','Medicine','Vehicle','Equipment']},{k:'qty',l:'Quantity',t:'number',min:0,def:100},{k:'unit',l:'Unit'},{k:'min',l:'Low threshold',t:'number',min:0,def:10}],
+[['Name',r=>RX.h(r.name)],['Category',r=>r.cat],['Stock',r=>`${Math.round(r.qty)} ${RX.h(r.unit)}`],['Consumed',r=>Math.round(r.used||0)],['Level',r=>RX.badge(r.qty<=r.min?'Critical':'Open')]],
+{defaults:()=>({used:0}),extra:()=>'<button class="btn sm" data-a="use">Allocate</button><button class="btn sm" data-a="add">Restock</button>',
+act:(a,r,done)=>RX.form((a==='use'?'Allocate ':'Restock ')+r.name,[{k:'n',l:'Amount',t:'number',min:1,def:10}],{},v=>{if(a==='use'){if(v.n>r.qty)return RX.toast('Insufficient stock',1);r.qty-=v.n;r.used=(r.used||0)+v.n}else r.qty+=v.n;RX.log(`${r.name} ${a==='use'?'allocated':'restocked'}: ${v.n}`);RX.toast('Updated');done()})})});
